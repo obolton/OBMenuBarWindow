@@ -1,26 +1,30 @@
 ## About OBMenuBarWindow
 
-The OBMenuBarWindow class is an NSWindow subclass that adds the ability to attach the window to an icon in the menu bar. It emulates much of the look and feel of NSPopover but retains the appearance and functionality of a regular window, including the title bar and traffic light controls. The user can drag the window to and from the menu bar icon to attach and detach it from the menu bar.
+The OBMenuBarWindow class is an [NSWindow](https://developer.apple.com/library/mac/#documentation/Cocoa/Reference/ApplicationKit/Classes/NSWindow_Class/Reference/Reference.html) subclass that adds the ability to attach the window to an icon in the menu bar in OS X. It emulates much of the look and feel of [NSPopover](http://developer.apple.com/library/mac/#documentation/AppKit/Reference/NSPopover_Class/Reference/Reference.html) but retains the appearance and functionality of a regular window, including the title bar and traffic light controls. The user can drag the window to and from the menu bar icon to attach and detach it from the menu bar.
 
-If the user resizes the window while it is attached to the menu bar, it will resize horizontally in a symmetrical manner around the center, to give a natural user experience.
+![Screenshot 1](http://docs.oliverbolton.com/OBMenuBarWindow/screenshot1.png)
+![Screenshot 2](http://docs.oliverbolton.com/OBMenuBarWindow/screenshot2.png)
 
-It is possible to hide the “traffic light” controls when the window is attached to the menu bar, if desired.
+If the user resizes the window while it is attached to the menu bar, it will resize horizontally in a symmetrical manner around the center to give a natural user experience.
+
+It is possible to hide the 'traffic light' controls when the window is attached to the menu bar, if desired.
 
 **Notes:**
 
-* OBMenuBarWindow does not use any private APIs, so it is Mac App Store compatible.
-* OBMenuBarWindow uses ARC. If you are using OBMenuBarWindow in a non-ARC project, you will need to set a '-fobjc-arc' compiler flag on the OBMenuBarWindow source files.
-* If you want an OBMenuBarWindow to be usable while another application is in full screen mode, create a new entry in your application’s .plist file for 'LSUIElement' and set its value to 'YES'. A side-effect of doing this is that the application’s dock icon will be hidden.
+* OBMenuBarWindow is compatible with OS X 10.7+.
+* It does not use any private APIs, so it is Mac App Store compatible.
+* OBMenuBarWindow uses ARC. If you are using OBMenuBarWindow in a non-ARC project, you will need to set a `-fobjc-arc` compiler flag on the OBMenuBarWindow source files.
+* If you want an OBMenuBarWindow to be usable while another application is in full-screen mode, create a new entry in your application’s .plist file for `LSUIElement` of Boolean type and set its value to `YES`. A side-effect of doing this is that the application’s dock icon will be hidden.
 * OBMenuBarWindow does not support textured windows or standard toolbars.
-* You can alter the height of the title bar and the dimensions of the arrow by changing the value of 'OBMenuBarWindowTitleBarHeight', 'OBMenuBarWindowArrowHeight' and 'OBMenuBarWindowArrowWidth' in OBMenuBarWindow.m.
-* You can observe the 'OBMenuBarWindowDidAttachToMenuBar' and 'OBMenuBarWindowDidDetachFromMenuBar' notifications from the window object to be notified when the user attaches or detaches the window from the menu bar.
+* You can alter the height of the title bar and the dimensions of the arrow by changing the value of `OBMenuBarWindowTitleBarHeight`, `OBMenuBarWindowArrowHeight` and `OBMenuBarWindowArrowWidth` in OBMenuBarWindow.m.
+* You can observe the `OBMenuBarWindowDidAttachToMenuBar` and `OBMenuBarWindowDidDetachFromMenuBar` notifications from the window object to be notified when the user attaches or detaches the window from the menu bar.
 
 ## Getting started
 
 * Download OBMenuBarWindow and try out the example project.
 * Copy OBMenuBarWindow.h and OBMenuBarWindow.m from the Classes directory and add them to your project.
 * Set your window's class to OBMenuBarWindow.
-* Set your window's icon using the menuBarIcon property, and set the hasMenuBarIcon property to YES.
+* Set your window's icon using the `menuBarIcon` property, and set the `hasMenuBarIcon` property to `YES`.
 
 ## Documentation
 
