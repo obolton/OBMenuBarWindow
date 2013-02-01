@@ -855,6 +855,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     }
     else
     {
+        [NSApp activateIgnoringOtherApps:YES];
         [self.menuBarWindow makeKeyAndOrderFront:self];
     }
 }
