@@ -665,6 +665,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
         noiseImage = [[NSImage alloc] initWithCGImage:imageRef size:NSMakeSize(dimension, dimension)];
         CGImageRelease(imageRef);
         CGContextRelease(contextRef);
+        free(data);
         CGColorSpaceRelease(colorSpaceRef);
     }
     return noiseImage;
