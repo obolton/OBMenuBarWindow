@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		40E4CDB216E4B90200A66C98 /* MenuBarIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 40E4CDB016E4B90200A66C98 /* MenuBarIcon@2x.png */; };
+		40E4CDB316E4B90200A66C98 /* MenuBarIcon2@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 40E4CDB116E4B90200A66C98 /* MenuBarIcon2@2x.png */; };
 		FD4B23D7163B8C7000920A81 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FD4B23D6163B8C7000920A81 /* Cocoa.framework */; };
 		FD4B23E1163B8C7000920A81 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = FD4B23DF163B8C7000920A81 /* InfoPlist.strings */; };
 		FD4B23E3163B8C7000920A81 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FD4B23E2163B8C7000920A81 /* main.m */; };
@@ -18,6 +20,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		40E4CDB016E4B90200A66C98 /* MenuBarIcon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MenuBarIcon@2x.png"; sourceTree = "<group>"; };
+		40E4CDB116E4B90200A66C98 /* MenuBarIcon2@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MenuBarIcon2@2x.png"; sourceTree = "<group>"; };
 		FD4B23D2163B8C7000920A81 /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FD4B23D6163B8C7000920A81 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		FD4B23D9163B8C7000920A81 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -100,7 +104,9 @@
 			isa = PBXGroup;
 			children = (
 				FD4B23FB163B8E2200920A81 /* MenuBarIcon.png */,
+				40E4CDB016E4B90200A66C98 /* MenuBarIcon@2x.png */,
 				FD4B23FC163B8E2200920A81 /* MenuBarIcon2.png */,
+				40E4CDB116E4B90200A66C98 /* MenuBarIcon2@2x.png */,
 				FD4B23DE163B8C7000920A81 /* Example-Info.plist */,
 				FD4B23DF163B8C7000920A81 /* InfoPlist.strings */,
 				FD4B23E2163B8C7000920A81 /* main.m */,
@@ -174,6 +180,8 @@
 				FD4B23ED163B8C7100920A81 /* MainMenu.xib in Resources */,
 				FD4B23FD163B8E2200920A81 /* MenuBarIcon.png in Resources */,
 				FD4B23FE163B8E2200920A81 /* MenuBarIcon2.png in Resources */,
+				40E4CDB216E4B90200A66C98 /* MenuBarIcon@2x.png in Resources */,
+				40E4CDB316E4B90200A66C98 /* MenuBarIcon2@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
