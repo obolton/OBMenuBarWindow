@@ -537,16 +537,10 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     if ([theEvent type] == NSLeftMouseDragged)
     {
         NSPoint newLocation = [NSEvent mouseLocation];
-        NSRect visibleRect = [[self screen] visibleFrame];
-        CGFloat maxY = NSMaxY(visibleRect);
         if (isDragging)
         {
             CGFloat originX = dragStartFrame.origin.x + newLocation.x - dragStartLocation.x;
             CGFloat originY = dragStartFrame.origin.y + newLocation.y - dragStartLocation.y;
-            if (originY + dragStartFrame.size.height - OBMenuBarWindowArrowHeight - 1 > maxY)
-            {
-                originY = maxY - dragStartFrame.size.height + OBMenuBarWindowArrowHeight + 1;
-            }
             [self setFrameOrigin:NSMakePoint(originX, originY)];
         }
     }
