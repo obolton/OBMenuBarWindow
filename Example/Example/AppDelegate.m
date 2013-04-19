@@ -40,6 +40,8 @@
     self.window.highlightedMenuBarIcon = [NSImage imageNamed:@"MenuBarIcon2"];
     self.window.hasMenuBarIcon = YES;
     self.window.attachedToMenuBar = YES;
+    // uncomment to force the window to be attached to the menu bar
+//    self.window.isDetachable = NO;
 }
 
 @end

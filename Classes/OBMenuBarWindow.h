@@ -106,6 +106,9 @@ extern const CGFloat OBMenuBarWindowArrowWidth;
  attached to the menu bar (default is `YES`). */
 @property (nonatomic, assign) BOOL hideWindowControlsWhenAttached;
 
+/** Whether window can be detached from the menu bar or not (default is YES) */
+@property (nonatomic, assign) BOOL isDetachable;
+
 /** The threshold distance between the centre of the title bar and the menu bar
  icon at which to "snap" the window to the menu bar when dragging (default is
  30.0 pixels). */

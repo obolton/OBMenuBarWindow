@@ -69,6 +69,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 @synthesize statusItem;
 @synthesize toolbarView;
 @synthesize titleTextField;
+@synthesize isDetachable;
 
 - (id)initWithContentRect:(NSRect)contentRect
                 styleMask:(NSUInteger)aStyle
@@ -83,6 +84,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     {
         snapDistance = 30.0;
         hideWindowControlsWhenAttached = YES;
+        isDetachable = YES;
         [self initialSetup];
     }
     return self;
@@ -571,7 +573,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
         NSRect statusItemFrame = [[statusItemView window] frame];
         NSPoint statusItemPoint = NSMakePoint(NSMidX(statusItemFrame), NSMinY(statusItemFrame));
         double distance = sqrt(pow(arrowPoint.x - statusItemPoint.x, 2) + pow(arrowPoint.y - statusItemPoint.y, 2));
-        if (distance <= self.snapDistance)
+        if (!isDetachable || distance <= self.snapDistance)
         {
             [self setFrameOrigin:[self originForAttachedState]];
             self.attachedToMenuBar = YES;
