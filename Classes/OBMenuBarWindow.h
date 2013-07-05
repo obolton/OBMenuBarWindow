@@ -102,6 +102,14 @@ extern const CGFloat OBMenuBarWindowArrowWidth;
  is set to `YES`. */
 @property (nonatomic, assign) BOOL attachedToMenuBar;
 
+/** Whether the window should 'orderOut' if looses focus but the app remains active.
+ 
+ Setting this to NO helps in case the window should remain visible if it opens a child Window,
+ like a Preferences Window.
+ Default is YES which will orderOut this Window if it opens another window, even if it is a child Window.
+ */
+@property (nonatomic, assign) BOOL isAllowOrderOutWindowIfAppActive;
+
 /** Whether to hide the "traffic light" window controls when the window is
  attached to the menu bar (default is `YES`). */
 @property (nonatomic, assign) BOOL hideWindowControlsWhenAttached;

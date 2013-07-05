@@ -85,6 +85,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
         snapDistance = 30.0;
         hideWindowControlsWhenAttached = YES;
         isDetachable = YES;
+        self.isAllowOrderOutWindowIfAppActive = YES;
         [self initialSetup];
     }
     return self;
@@ -457,7 +458,9 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 {
     if (self.attachedToMenuBar)
     {
-        [self orderOut:self];
+        if( self.isAllowOrderOutWindowIfAppActive || (!self.isAllowOrderOutWindowIfAppActive && ![NSApp keyWindow]) ) {
+            [self orderOut:self];
+        }
     }
     [[self.contentView superview] setNeedsDisplayInRect:[self titleBarRect]];
 }
