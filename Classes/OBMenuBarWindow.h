@@ -35,7 +35,6 @@ extern NSString * const OBMenuBarWindowDidAttachToMenuBar;
 extern NSString * const OBMenuBarWindowDidDetachFromMenuBar;
 
 // Constants
-extern const CGFloat OBMenuBarWindowTitleBarHeight;
 extern const CGFloat OBMenuBarWindowArrowHeight;
 extern const CGFloat OBMenuBarWindowArrowWidth;
 
@@ -121,6 +120,9 @@ extern const CGFloat OBMenuBarWindowArrowWidth;
  icon at which to "snap" the window to the menu bar when dragging (default is
  30.0 pixels). */
 @property (assign) CGFloat snapDistance;
+
+/** Height of the Title Bar */
+@property (assign) CGFloat windowTitleBarHeight;
 
 /** The icon to show in the menu bar. The image should have a maximum height of
  22 pixels (or 44 pixels for retina displays). */
