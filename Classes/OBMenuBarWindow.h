@@ -122,7 +122,7 @@ extern const CGFloat OBMenuBarWindowArrowWidth;
 @property (assign) CGFloat snapDistance;
 
 /** Height of the Title Bar */
-@property (assign) CGFloat windowTitleBarHeight;
+@property (nonatomic, assign) CGFloat windowTitleBarHeight;
 
 /** The icon to show in the menu bar. The image should have a maximum height of
  22 pixels (or 44 pixels for retina displays). */

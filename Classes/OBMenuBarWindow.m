@@ -438,6 +438,13 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     }
 }
 
+#pragma mark - Property methods
+
+- (void)setWindowTitleBarHeight:(CGFloat)toTitleBarHeight {
+    _windowTitleBarHeight = toTitleBarHeight;
+    [self layoutContent];
+}
+
 #pragma mark - Active/key events
 
 - (BOOL)canBecomeKeyWindow
