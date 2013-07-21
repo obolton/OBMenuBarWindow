@@ -230,7 +230,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
             statusItemView = [[OBMenuBarWindowIconView alloc] initWithFrame:NSMakeRect(0, 0, (self.menuBarIcon ? self.menuBarIcon.size.width : thickness) + 6, thickness)];
             statusItemView.menuBarWindow = self;
             statusItem.view = statusItemView;
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusItemViewDidMove:) name:NSWindowDidMoveNotification object:statusItem.view.window];
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusItemViewDidMove:) name:NSWindowDidMoveNotification object:statusItemView.window];
         }
         else
         {
@@ -460,6 +460,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 - (void)windowDidBecomeKey:(NSNotification *)aNotification
 {
     [[self.contentView superview] setNeedsDisplayInRect:[self titleBarRect]];
+    [self updateWindowPositionByMenuBar];
 }
 
 - (void)windowDidResignKey:(NSNotification *)aNotification
@@ -481,9 +482,19 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     {
         NSRect statusItemFrame = [[statusItemView window] frame];
         NSPoint midPoint = NSMakePoint(NSMidX(statusItemFrame),
-                                       NSMinY(statusItemFrame));
-        return NSMakePoint(midPoint.x - (self.frame.size.width / 2),
-                           midPoint.y - self.frame.size.height);
+                                       statusItemFrame.origin.y);
+        
+        NSScreen *screenWithMenuBar = [[NSScreen screens] objectAtIndex:0];
+        if( screenWithMenuBar ) {
+            // correct the top position by the 'screen with the MenuBar's height
+            //  workaround: without this the window will be off-placed when the user plugs in an external display,
+            //      a display with more height
+            midPoint.y = [screenWithMenuBar visibleFrame].size.height;
+        }
+        
+        NSPoint originPoint = NSMakePoint(midPoint.x - (self.frame.size.width / 2),
+                                          midPoint.y - self.frame.size.height);
+        return originPoint;
     }
     else
     {
@@ -493,10 +504,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 
 - (void)makeKeyAndOrderFront:(id)sender
 {
-    if (self.attachedToMenuBar)
-    {
-        [self setFrameOrigin:[self originForAttachedState]];
-    }
+    [self updateWindowPositionByMenuBar];
     [super makeKeyAndOrderFront:sender];
 }
 
@@ -597,12 +605,17 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     [self layoutContent];
 }
 
-- (void)statusItemViewDidMove:(NSNotification *)aNotification
+- (void)updateWindowPositionByMenuBar
 {
     if (self.attachedToMenuBar)
     {
         [self setFrameOrigin:[self originForAttachedState]];
     }
+}
+
+- (void)statusItemViewDidMove:(NSNotification *)aNotification
+{
+    [self updateWindowPositionByMenuBar];
 }
 
 - (void)setFrame:(NSRect)frameRect display:(BOOL)flag
