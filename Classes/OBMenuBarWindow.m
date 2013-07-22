@@ -489,7 +489,8 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
             // correct the top position by the 'screen with the MenuBar's height
             //  workaround: without this the window will be off-placed when the user plugs in an external display,
             //      a display with more height
-            midPoint.y = [screenWithMenuBar visibleFrame].size.height;
+            NSRect visibleRect = [screenWithMenuBar visibleFrame];
+            midPoint.y = visibleRect.size.height + visibleRect.origin.y;
         }
         
         NSPoint originPoint = NSMakePoint(midPoint.x - (self.frame.size.width / 2),
