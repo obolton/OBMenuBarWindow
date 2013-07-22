@@ -35,7 +35,6 @@ extern NSString * const OBMenuBarWindowDidAttachToMenuBar;
 extern NSString * const OBMenuBarWindowDidDetachFromMenuBar;
 
 // Constants
-extern const CGFloat OBMenuBarWindowTitleBarHeight;
 extern const CGFloat OBMenuBarWindowArrowHeight;
 extern const CGFloat OBMenuBarWindowArrowWidth;
 
@@ -102,6 +101,14 @@ extern const CGFloat OBMenuBarWindowArrowWidth;
  is set to `YES`. */
 @property (nonatomic, assign) BOOL attachedToMenuBar;
 
+/** Whether the window should 'orderOut' if looses focus but the app remains active.
+ 
+ Setting this to NO helps in case the window should remain visible if it opens a child Window,
+ like a Preferences Window.
+ Default is YES which will orderOut this Window if it opens another window, even if it is a child Window.
+ */
+@property (nonatomic, assign) BOOL isAllowOrderOutWindowIfAppActive;
+
 /** Whether to hide the "traffic light" window controls when the window is
  attached to the menu bar (default is `YES`). */
 @property (nonatomic, assign) BOOL hideWindowControlsWhenAttached;
@@ -113,6 +120,9 @@ extern const CGFloat OBMenuBarWindowArrowWidth;
  icon at which to "snap" the window to the menu bar when dragging (default is
  30.0 pixels). */
 @property (assign) CGFloat snapDistance;
+
+/** Height of the Title Bar */
+@property (nonatomic, assign) CGFloat windowTitleBarHeight;
 
 /** The icon to show in the menu bar. The image should have a maximum height of
  22 pixels (or 44 pixels for retina displays). */

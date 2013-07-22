@@ -35,7 +35,7 @@ NSString * const OBMenuBarWindowDidAttachToMenuBar = @"OBMenuBarWindowDidAttachT
 NSString * const OBMenuBarWindowDidDetachFromMenuBar = @"OBMenuBarWindowDidDetachFromMenuBar";
 
 // You can alter these constants to change the appearance of the window
-const CGFloat OBMenuBarWindowTitleBarHeight = 22.0;
+const CGFloat OBMenuBarWindowTitleBarDefaultHeight = 22.0;
 const CGFloat OBMenuBarWindowArrowHeight = 10.0;
 const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 
@@ -85,6 +85,8 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
         snapDistance = 30.0;
         hideWindowControlsWhenAttached = YES;
         isDetachable = YES;
+        self.isAllowOrderOutWindowIfAppActive = YES;
+        self.windowTitleBarHeight = OBMenuBarWindowTitleBarDefaultHeight;
         [self initialSetup];
     }
     return self;
@@ -204,7 +206,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     // Position the content view
     NSRect contentViewFrame = [self.contentView frame];
     CGFloat currentTopMargin = NSHeight(self.frame) - NSHeight(contentViewFrame);
-    CGFloat titleBarHeight = OBMenuBarWindowTitleBarHeight + (self.attachedToMenuBar ? OBMenuBarWindowArrowHeight : 0) + 1;
+    CGFloat titleBarHeight = self.windowTitleBarHeight + (self.attachedToMenuBar ? OBMenuBarWindowArrowHeight : 0) + 1;
     CGFloat delta = titleBarHeight - currentTopMargin;
     contentViewFrame.size.height -= delta;
     [self.contentView setFrame:contentViewFrame];
@@ -228,7 +230,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
             statusItemView = [[OBMenuBarWindowIconView alloc] initWithFrame:NSMakeRect(0, 0, (self.menuBarIcon ? self.menuBarIcon.size.width : thickness) + 6, thickness)];
             statusItemView.menuBarWindow = self;
             statusItem.view = statusItemView;
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusItemViewDidMove:) name:NSWindowDidMoveNotification object:statusItem.view.window];
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusItemViewDidMove:) name:NSWindowDidMoveNotification object:statusItemView.window];
         }
         else
         {
@@ -416,9 +418,9 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 - (NSRect)titleBarRect
 {
     return NSMakeRect(0,
-                      self.frame.size.height - OBMenuBarWindowTitleBarHeight - (self.attachedToMenuBar ? OBMenuBarWindowArrowHeight : 0),
+                      self.frame.size.height - self.windowTitleBarHeight - (self.attachedToMenuBar ? OBMenuBarWindowArrowHeight : 0),
                       self.frame.size.width,
-                      OBMenuBarWindowTitleBarHeight + (self.attachedToMenuBar ? OBMenuBarWindowArrowHeight : 0));
+                      self.windowTitleBarHeight + (self.attachedToMenuBar ? OBMenuBarWindowArrowHeight : 0));
 }
 
 - (NSRect)toolbarRect
@@ -426,14 +428,21 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     if (self.attachedToMenuBar)
     {
         return NSMakeRect(0,
-                          self.frame.size.height - OBMenuBarWindowTitleBarHeight - OBMenuBarWindowArrowHeight,
+                          self.frame.size.height - self.windowTitleBarHeight - OBMenuBarWindowArrowHeight,
                           self.frame.size.width,
-                          OBMenuBarWindowTitleBarHeight);
+                          self.windowTitleBarHeight);
     }
     else
     {
         return [self titleBarRect];
     }
+}
+
+#pragma mark - Property methods
+
+- (void)setWindowTitleBarHeight:(CGFloat)toTitleBarHeight {
+    _windowTitleBarHeight = toTitleBarHeight;
+    [self layoutContent];
 }
 
 #pragma mark - Active/key events
@@ -451,13 +460,16 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 - (void)windowDidBecomeKey:(NSNotification *)aNotification
 {
     [[self.contentView superview] setNeedsDisplayInRect:[self titleBarRect]];
+    [self updateWindowPositionByMenuBar];
 }
 
 - (void)windowDidResignKey:(NSNotification *)aNotification
 {
     if (self.attachedToMenuBar)
     {
-        [self orderOut:self];
+        if( self.isAllowOrderOutWindowIfAppActive || (!self.isAllowOrderOutWindowIfAppActive && ![NSApp keyWindow]) ) {
+            [self orderOut:self];
+        }
     }
     [[self.contentView superview] setNeedsDisplayInRect:[self titleBarRect]];
 }
@@ -470,9 +482,20 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     {
         NSRect statusItemFrame = [[statusItemView window] frame];
         NSPoint midPoint = NSMakePoint(NSMidX(statusItemFrame),
-                                       NSMinY(statusItemFrame));
-        return NSMakePoint(midPoint.x - (self.frame.size.width / 2),
-                           midPoint.y - self.frame.size.height);
+                                       statusItemFrame.origin.y);
+        
+        NSScreen *screenWithMenuBar = [[NSScreen screens] objectAtIndex:0];
+        if( screenWithMenuBar ) {
+            // correct the top position by the 'screen with the MenuBar's height
+            //  workaround: without this the window will be off-placed when the user plugs in an external display,
+            //      a display with more height
+            NSRect visibleRect = [screenWithMenuBar visibleFrame];
+            midPoint.y = visibleRect.size.height + visibleRect.origin.y;
+        }
+        
+        NSPoint originPoint = NSMakePoint(midPoint.x - (self.frame.size.width / 2),
+                                          midPoint.y - self.frame.size.height);
+        return originPoint;
     }
     else
     {
@@ -482,10 +505,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 
 - (void)makeKeyAndOrderFront:(id)sender
 {
-    if (self.attachedToMenuBar)
-    {
-        [self setFrameOrigin:[self originForAttachedState]];
-    }
+    [self updateWindowPositionByMenuBar];
     [super makeKeyAndOrderFront:sender];
 }
 
@@ -586,12 +606,17 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     [self layoutContent];
 }
 
-- (void)statusItemViewDidMove:(NSNotification *)aNotification
+- (void)updateWindowPositionByMenuBar
 {
     if (self.attachedToMenuBar)
     {
         [self setFrameOrigin:[self originForAttachedState]];
     }
+}
+
+- (void)statusItemViewDidMove:(NSNotification *)aNotification
+{
+    [self updateWindowPositionByMenuBar];
 }
 
 - (void)setFrame:(NSRect)frameRect display:(BOOL)flag
@@ -698,7 +723,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     NSRectFill(dirtyRect);
     
     // Erase the default title bar
-    CGFloat titleBarHeight = OBMenuBarWindowTitleBarHeight + (isAttached ? OBMenuBarWindowArrowHeight : 0);
+    CGFloat titleBarHeight = window.windowTitleBarHeight + (isAttached ? OBMenuBarWindowArrowHeight : 0);
     [[NSColor clearColor] set];
     NSRectFillUsingOperation([window titleBarRect], NSCompositeClear);
     
@@ -723,9 +748,9 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     NSPoint topRight = NSMakePoint(originX + width,
                                    originY + height - (isAttached ? OBMenuBarWindowArrowHeight : 0));
     NSPoint bottomLeft = NSMakePoint(originX,
-                                     originY + height - arrowHeight - OBMenuBarWindowTitleBarHeight);
+                                     originY + height - arrowHeight - window.windowTitleBarHeight);
     NSPoint bottomRight = NSMakePoint(originX + width,
-                                      originY + height - arrowHeight - OBMenuBarWindowTitleBarHeight);
+                                      originY + height - arrowHeight - window.windowTitleBarHeight);
     
     NSBezierPath *border = [NSBezierPath bezierPath];
     [border moveToPoint:arrowPointLeft];
@@ -748,11 +773,11 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     NSRect headingRect = NSMakeRect(originX,
                                     originY + height - titleBarHeight,
                                     width,
-                                    OBMenuBarWindowTitleBarHeight);
+                                    window.windowTitleBarHeight);
     NSRect titleBarRect = NSMakeRect(originX,
                                      originY + height - titleBarHeight,
                                      width,
-                                     OBMenuBarWindowTitleBarHeight + OBMenuBarWindowArrowHeight);
+                                     window.windowTitleBarHeight + OBMenuBarWindowArrowHeight);
     
     // Colors
     NSColor *bottomColor, *topColor, *topColorTransparent;
@@ -818,7 +843,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     // Draw separator line between the titlebar and the content view
     [[NSColor colorWithCalibratedWhite:0.5 alpha:1.0] set];
     NSRect separatorRect = NSMakeRect(originX,
-                                      originY + height - OBMenuBarWindowTitleBarHeight - (isAttached ? OBMenuBarWindowArrowHeight : 0) - 1,
+                                      originY + height - window.windowTitleBarHeight - (isAttached ? OBMenuBarWindowArrowHeight : 0) - 1,
                                       width,
                                       1);
     NSRectFill(separatorRect);
