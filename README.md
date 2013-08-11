@@ -18,6 +18,7 @@ It is possible to hide the 'traffic light' controls when the window is attached 
 * OBMenuBarWindow does not support textured windows or standard toolbars.
 * You can alter the height of the title bar and the dimensions of the arrow by changing the value of `OBMenuBarWindowTitleBarHeight`, `OBMenuBarWindowArrowHeight` and `OBMenuBarWindowArrowWidth` in OBMenuBarWindow.m.
 * You can observe the `OBMenuBarWindowDidAttachToMenuBar` and `OBMenuBarWindowDidDetachFromMenuBar` notifications from the window object to be notified when the user attaches or detaches the window from the menu bar.
+* You can control the distance of the attached window from the menu bar with the `distanceFromMenuBar` property.
 
 ## Getting started
 
@@ -32,7 +33,7 @@ Read the [Documentation](http://docs.oliverbolton.com/OBMenuBarWindow/Classes/OB
 
 ## Credits
 
-OBMenuBarWindow was created by [Oliver Bolton](http://oliverbolton.com/).
+OBMenuBarWindow was created by Oliver Bolton.
 
 ## License
 
