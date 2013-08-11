@@ -64,6 +64,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 @synthesize attachedToMenuBar;
 @synthesize hideWindowControlsWhenAttached;
 @synthesize snapDistance;
+@synthesize distanceFromMenuBar;
 @synthesize menuBarIcon;
 @synthesize highlightedMenuBarIcon;
 @synthesize statusItem;
@@ -83,6 +84,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     if (self)
     {
         snapDistance = 30.0;
+        distanceFromMenuBar = 0;
         hideWindowControlsWhenAttached = YES;
         isDetachable = YES;
         [self initialSetup];
@@ -472,7 +474,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
         NSPoint midPoint = NSMakePoint(NSMidX(statusItemFrame),
                                        NSMinY(statusItemFrame));
         return NSMakePoint(midPoint.x - (self.frame.size.width / 2),
-                           midPoint.y - self.frame.size.height);
+                           midPoint.y - MAX(self.distanceFromMenuBar, 0) - self.frame.size.height);
     }
     else
     {
@@ -563,6 +565,15 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 }
 
 #pragma mark - Positioning events
+
+- (void)setDistanceFromMenuBar:(CGFloat)distance
+{
+    distanceFromMenuBar = distance;
+    if (self.attachedToMenuBar)
+    {
+        [self setFrameOrigin:[self originForAttachedState]];
+    }
+}
 
 - (void)windowDidMove:(NSNotification *)aNotification
 {

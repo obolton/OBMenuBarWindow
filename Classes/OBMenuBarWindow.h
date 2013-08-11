@@ -111,8 +111,12 @@ extern const CGFloat OBMenuBarWindowArrowWidth;
 
 /** The threshold distance between the centre of the title bar and the menu bar
  icon at which to "snap" the window to the menu bar when dragging (default is
- 30.0 pixels). */
+ 30 pixels). */
 @property (assign) CGFloat snapDistance;
+
+/** The distance between the window and the menu bar when the window is attached
+ (default is 0 pixels). */
+@property (nonatomic, assign) CGFloat distanceFromMenuBar;
 
 /** The icon to show in the menu bar. The image should have a maximum height of
  22 pixels (or 44 pixels for retina displays). */
