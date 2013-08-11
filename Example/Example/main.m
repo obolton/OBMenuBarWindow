@@ -2,7 +2,7 @@
 //  main.m
 //  OBMenuBarWindow Example
 //
-//  Copyright (c) 2012, Oliver Bolton (http://oliverbolton.com/)
+//  Copyright (c) 2013, Oliver Bolton (http://oliverbolton.com/)
 //  All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without
