@@ -356,16 +356,16 @@ NSString * const OBMenuBarWindowDidDetachFromMenuBar = @"OBMenuBarWindowDidDetac
     [self setLevel:(isAttached ? NSPopUpMenuWindowLevel : NSNormalWindowLevel)];
     if (self.delegate != nil)
     {
-        if (isAttached && [self.delegate respondsToSelector:@selector(windowDidAttachToStatusBar:)])
+        if (isAttached && [self.delegate respondsToSelector:@selector(windowDidAttachToMenuBar:)])
         {
-            [self.delegate performSelector:@selector(windowDidAttachToStatusBar:)
+            [self.delegate performSelector:@selector(windowDidAttachToMenuBar:)
                                 withObject:self];
             [[NSNotificationCenter defaultCenter] postNotificationName:OBMenuBarWindowDidAttachToMenuBar
                                                                 object:self];
         }
-        else if (!isAttached && [self.delegate respondsToSelector:@selector(windowDidDetachFromStatusBar:)])
+        else if (!isAttached && [self.delegate respondsToSelector:@selector(windowDidDetachFromMenuBar:)])
         {
-            [self.delegate performSelector:@selector(windowDidDetachFromStatusBar:)
+            [self.delegate performSelector:@selector(windowDidDetachFromMenuBar:)
                                 withObject:self];
             [[NSNotificationCenter defaultCenter] postNotificationName:OBMenuBarWindowDidDetachFromMenuBar
                                                                 object:self];

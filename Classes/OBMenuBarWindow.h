@@ -124,6 +124,29 @@
 
 @end
 
+/**
+ * The `OBMenuBarWindowDelegate` protocol defines methods that a delegate of `OBMenuBarWindow` may implement to notify it when the window attaches to or detaches from the menu bar.
+ */
+@protocol OBMenuBarWindowDelegate <NSWindowDelegate>
+
+@optional
+
+/**
+ * Called after the window attached to the menu bar.
+ *
+ * @param window The window.
+ */
+- (void)windowDidAttachToMenuBar:(OBMenuBarWindow *)window;
+
+/**
+ * Called after the window detached from the menu bar.
+ *
+ * @param window The window.
+ */
+- (void)windowDidDetachFromMenuBar:(OBMenuBarWindow *)window;
+
+@end
+
 ///---------------------
 /// @name Notifications
 ///---------------------
