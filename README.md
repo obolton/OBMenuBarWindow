@@ -1,6 +1,8 @@
 ## OBMenuBarWindow
 
-`OBMenuBarWindow` is an [NSWindow](https://developer.apple.com/library/mac/#documentation/Cocoa/Reference/ApplicationKit/Classes/NSWindow_Class/Reference/Reference.html) subclass that adds the ability to attach the window to an icon in the menu bar in OS X. It emulates much of the look and feel of [NSPopover](http://developer.apple.com/library/mac/#documentation/AppKit/Reference/NSPopover_Class/Reference/Reference.html) but retains the appearance and functionality of a regular window, including the title bar and traffic light controls. The user can drag the window to and from the menu bar icon to attach and detach it from the menu bar.
+OBMenuBarWindow is an [NSWindow](https://developer.apple.com/library/mac/#documentation/Cocoa/Reference/ApplicationKit/Classes/NSWindow_Class/Reference/Reference.html) subclass that adds the ability to attach the window to an icon in the menu bar in OS X.
+
+It emulates much of the look and feel of [NSPopover](http://developer.apple.com/library/mac/#documentation/AppKit/Reference/NSPopover_Class/Reference/Reference.html) but retains the appearance and functionality of a regular window, including the title bar and traffic light controls. You can drag the window to and from the menu bar icon to attach and detach it from the menu bar.
 
 ![Screenshot 1](http://docs.oliverbolton.com/OBMenuBarWindow/screenshot1.png)
 ![Screenshot 2](http://docs.oliverbolton.com/OBMenuBarWindow/screenshot2.png)
@@ -22,11 +24,13 @@
 
 [CocoaPods](http://cocoapods.org/) is a dependency manager for Objective-C projects.
 
-`pod "OBMenuBarWindow"`
+Add the project to your Podfile:
+
+- `pod "OBMenuBarWindow"`
 
 ### Manual installation
 
-* Download the source and add `OBMenuBarWindow.h` and `OBMenuBarWindow.m` to your project.
+Download the source and add `OBMenuBarWindow.h` and `OBMenuBarWindow.m` to your project.
 
 ### Using OBMenuBarWindow
 
