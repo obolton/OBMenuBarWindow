@@ -34,11 +34,6 @@
 extern NSString * const OBMenuBarWindowDidAttachToMenuBar;
 extern NSString * const OBMenuBarWindowDidDetachFromMenuBar;
 
-// Constants
-extern const CGFloat OBMenuBarWindowTitleBarHeight;
-extern const CGFloat OBMenuBarWindowArrowHeight;
-extern const CGFloat OBMenuBarWindowArrowWidth;
-
 /**
  * The `OBMenuBarWindow` class is an `NSWindow` subclass that adds the ability
  * to attach the window to an icon in the menu bar. It emulates much of the look
@@ -130,13 +125,27 @@ extern const CGFloat OBMenuBarWindowArrowWidth;
 @property (readonly) NSStatusItem *statusItem;
 
 /**
- * The view containing the window's toolbar items. You can access this view to add additional controls to the titlebar.
+ * The size of the arrow that points to the menu bar icon (default is {20, 10}).
  */
-@property (readonly) NSView *toolbarView;
+@property (nonatomic, assign) NSSize arrowSize;
+
+///-----------------
+/// @name Title bar
+///-----------------
+
+/**
+ * The height of the title bar (default is 22 pixels).
+ */
+@property (nonatomic, assign) CGFloat titleBarHeight;
 
 /**
  * The window's title text field.
  */
 @property (readonly) NSTextField *titleTextField;
+
+/**
+ * The view containing the window's toolbar items. You can access this view to add additional controls to the titlebar.
+ */
+@property (readonly) NSView *toolbarView;
 
 @end
