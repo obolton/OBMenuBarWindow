@@ -676,13 +676,19 @@ NSString * const OBMenuBarWindowDidDetachFromMenuBar = @"OBMenuBarWindowDidDetac
         unsigned char grey;
         for (NSUInteger i = 0; i < bytes; i += 4)
         {
-            grey = rand() % 256;
+            grey = (unsigned char)(rand() % 256);
             data[i] = grey;
             data[i + 1] = grey;
             data[i + 2] = grey;
             data[i + 3] = 6;
         }
-        CGContextRef contextRef = CGBitmapContextCreate(data, dimension, dimension, 8, dimension * 4, colorSpaceRef, kCGImageAlphaPremultipliedLast);
+        CGContextRef contextRef = CGBitmapContextCreate(data,
+                                                        dimension,
+                                                        dimension,
+                                                        8,
+                                                        dimension * 4,
+                                                        colorSpaceRef,
+                                                        (CGBitmapInfo)kCGImageAlphaPremultipliedLast);
         CGImageRef imageRef = CGBitmapContextCreateImage(contextRef);
         _noiseImage = [[NSImage alloc] initWithCGImage:imageRef size:NSMakeSize(dimension, dimension)];
         CGImageRelease(imageRef);
