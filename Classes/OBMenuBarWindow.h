@@ -41,42 +41,41 @@ extern const CGFloat OBMenuBarWindowArrowWidth;
 
 @class OBMenuBarWindowIconView;
 
-/** The `OBMenuBarWindow` class is an `NSWindow` subclass that adds the ability
- to attach the window to an icon in the menu bar. It emulates much of the look
- and feel of `NSPopover` but retains the appearance and functionality of a
- regular window, including the title bar and traffic light controls. The user
- can drag the window to and from the menu bar icon to attach and detach it from
- the menu bar.
- 
- If the user resizes the window while it is attached to the menu bar, it will
- resize horizontally in a symmetrical manner around the center to give a natural
- user experience.
- 
- It is possible to hide the "traffic light" controls when the window is attached
- to the menu bar, if desired.
- 
- **Notes:**
- 
- - OBMenuBarWindow does not use any private APIs, so it is Mac App Store
-   compatible.
- - OBMenuBarWindow uses ARC. If you are using OBMenuBarWindow in a non-ARC
-   project, you will need to set a `-fobjc-arc` compiler flag on the
-   OBMenuBarWindow source files.
- - If you want an OBMenuBarWindow to be usable while another application is in
-   full screen mode, create a new entry in your application's `.plist` file for
-   `LSUIElement` and set its value to `YES`. A side-effect of doing this is that
-   the application's dock icon will be hidden.
- - OBMenuBarWindow does not support textured windows or standard toolbars.
- - You can alter the height of the title bar and the dimensions of the arrow by
-   changing the value of `OBMenuBarWindowTitleBarHeight`,
-   `OBMenuBarWindowArrowHeight` and `OBMenuBarWindowArrowWidth` in
-   `OBMenuBarWindow.m`.
- - You can observe the `OBMenuBarWindowDidAttachToMenuBar` and
-   `OBMenuBarWindowDidDetachFromMenuBar` notifications from the window object to
-   be notified when the user attaches or detaches the window from the menu bar.
- 
+/**
+ * The `OBMenuBarWindow` class is an `NSWindow` subclass that adds the ability
+ * to attach the window to an icon in the menu bar. It emulates much of the look
+ * and feel of `NSPopover` but retains the appearance and functionality of a
+ * regular window, including the title bar and traffic light controls. The user
+ * can drag the window to and from the menu bar icon to attach and detach it from
+ * the menu bar.
+ *
+ * If the user resizes the window while it is attached to the menu bar, it will
+ * resize horizontally in a symmetrical manner around the center to give a natural
+ * user experience.
+ *
+ * It is possible to hide the "traffic light" controls when the window is attached
+ * to the menu bar, if desired.
+ *
+ * **Notes:**
+ *
+ * - OBMenuBarWindow does not use any private APIs, so it is Mac App Store
+ *   compatible.
+ * - OBMenuBarWindow uses ARC. If you are using OBMenuBarWindow in a non-ARC
+ *   project, you will need to set a `-fobjc-arc` compiler flag on the
+ *   OBMenuBarWindow source files.
+ * - If you want an OBMenuBarWindow to be usable while another application is in
+ *   full screen mode, create a new entry in your application's `.plist` file for
+ *   `LSUIElement` and set its value to `YES`. A side-effect of doing this is that
+ *   the application's dock icon will be hidden.
+ * - OBMenuBarWindow does not support textured windows or standard toolbars.
+ * - You can alter the height of the title bar and the dimensions of the arrow by
+ *   changing the value of `OBMenuBarWindowTitleBarHeight`,
+ *   `OBMenuBarWindowArrowHeight` and `OBMenuBarWindowArrowWidth` in
+ *   `OBMenuBarWindow.m`.
+ * - You can observe the `OBMenuBarWindowDidAttachToMenuBar` and
+ *   `OBMenuBarWindowDidDetachFromMenuBar` notifications from the window object to
+ *   be notified when the user attaches or detaches the window from the menu bar.
  */
- 
 @interface OBMenuBarWindow : NSWindow
 {
     BOOL isDragging;
@@ -92,60 +91,84 @@ extern const CGFloat OBMenuBarWindowArrowWidth;
     OBMenuBarWindowIconView *statusItemView;
 }
 
-/** Whether the window has an associated icon in the menu bar (default is `NO`).
- If this is `YES`, set the `menuBarIcon` property and optionally the
- `highlightedMenuBar` property.*/
+///------------------
+/// @name Properties
+///------------------
+
+/**
+ * Whether the window has an icon in the menu bar (default is `NO`).
+ *
+ * If this is `YES`, set the `menuBarIcon` property and optionally the `highlightedMenuBar` property.
+ */
 @property (nonatomic, assign) BOOL hasMenuBarIcon;
 
-/** Whether the window is attached to its icon in the menu bar (default is
- `NO`). This property will only have an effect if the `hasMenuBarIcon` property
- is set to `YES`. */
+/**
+ * Whether the window is attached to its icon in the menu bar (default is `NO`).
+ *
+ * This property will only have an effect if the `hasMenuBarIcon` property is set to `YES`.
+ */
 @property (nonatomic, assign) BOOL attachedToMenuBar;
 
-/** Whether to hide the "traffic light" window controls when the window is
- attached to the menu bar (default is `YES`). */
+/**
+ * Whether to hide the "traffic light" window controls when the window is attached to the menu bar (default is `YES`).
+ */
 @property (nonatomic, assign) BOOL hideWindowControlsWhenAttached;
 
-/** Whether window can be detached from the menu bar or not (default is YES) */
+/**
+ * Whether the window can be detached from the menu bar or not (default is `YES`).
+ */
 @property (nonatomic, assign) BOOL isDetachable;
 
-/** The threshold distance between the centre of the title bar and the menu bar
- icon at which to "snap" the window to the menu bar when dragging (default is
- 30 pixels). */
+/**
+ * The threshold distance between the centre of the title bar and the menu bar icon at which to "snap" the window to the menu bar when dragging (default is 30 pixels).
+ */
 @property (assign) CGFloat snapDistance;
 
-/** The distance between the window and the menu bar when the window is attached
- (default is 0 pixels). */
+/**
+ The distance between the window and the menu bar when the window is attached (default is 0 pixels).
+ */
 @property (nonatomic, assign) CGFloat distanceFromMenuBar;
 
-/** The icon to show in the menu bar. The image should have a maximum height of
- 22 pixels (or 44 pixels for retina displays). */
+/**
+ * The icon to show in the menu bar. The image should have a maximum height of 22 pixels (or 44 pixels for retina displays).
+ */
 @property (nonatomic, strong) NSImage *menuBarIcon;
 
-/** The highlighted version of the icon to show in the menu bar. The dimensions
- of the image should match the non-highlighted image. */
+/**
+ * The highlighted version of the icon to show in the menu bar. The dimensions of the image should match the non-highlighted image.
+ */
 @property (nonatomic, strong) NSImage *highlightedMenuBarIcon;
 
-/** The status item associated with the window. */
+/**
+ * The status item associated with the window.
+ */
 @property (readonly) NSStatusItem *statusItem;
 
-/** The view containing the window's toolbar items. You can access this view to
- add additional controls to the titlebar. */
+/**
+ * The view containing the window's toolbar items. You can access this view to add additional controls to the titlebar.
+ */
 @property (readonly) NSView *toolbarView;
 
-/** The window's title text field. */
+/**
+ * The window's title text field.
+ */
 @property (readonly) NSTextField *titleTextField;
 
 @end
 
-/** The `OBStatusItemView` class handles drawing and interacting with the menu
- bar icon of an `OBMenuBarWindow`. */
+/**
+ * The `OBStatusItemView` class handles drawing and interacting with the menu bar icon of an `OBMenuBarWindow`.
+ */
 @interface OBMenuBarWindowIconView : NSView
 
-/** The window attached to the menu bar item. */
+/**
+ * The window attached to the menu bar item.
+ */
 @property (assign) OBMenuBarWindow *menuBarWindow;
 
-/** Whether the menu bar icon is highlighted. */
+/**
+ * Whether the menu bar icon is highlighted.
+ */
 @property (nonatomic, assign) BOOL highlighted;
 
 @end
