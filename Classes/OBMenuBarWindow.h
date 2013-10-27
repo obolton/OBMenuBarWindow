@@ -155,20 +155,3 @@ extern const CGFloat OBMenuBarWindowArrowWidth;
 @property (readonly) NSTextField *titleTextField;
 
 @end
-
-/**
- * The `OBStatusItemView` class handles drawing and interacting with the menu bar icon of an `OBMenuBarWindow`.
- */
-@interface OBMenuBarWindowIconView : NSView
-
-/**
- * The window attached to the menu bar item.
- */
-@property (assign) OBMenuBarWindow *menuBarWindow;
-
-/**
- * Whether the menu bar icon is highlighted.
- */
-@property (nonatomic, assign) BOOL highlighted;
-
-@end

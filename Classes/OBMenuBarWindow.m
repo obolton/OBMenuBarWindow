@@ -39,6 +39,13 @@ const CGFloat OBMenuBarWindowTitleBarHeight = 22.0;
 const CGFloat OBMenuBarWindowArrowHeight = 10.0;
 const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 
+@interface OBMenuBarWindowIconView : NSView
+
+@property (nonatomic, assign) OBMenuBarWindow *menuBarWindow;
+@property (nonatomic, assign) BOOL highlighted;
+
+@end
+
 @interface OBMenuBarWindow ()
 
 - (void)initialSetup;
