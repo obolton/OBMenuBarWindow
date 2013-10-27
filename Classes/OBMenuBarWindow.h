@@ -39,8 +39,6 @@ extern const CGFloat OBMenuBarWindowTitleBarHeight;
 extern const CGFloat OBMenuBarWindowArrowHeight;
 extern const CGFloat OBMenuBarWindowArrowWidth;
 
-@class OBMenuBarWindowIconView;
-
 /**
  * The `OBMenuBarWindow` class is an `NSWindow` subclass that adds the ability
  * to attach the window to an icon in the menu bar. It emulates much of the look
@@ -77,19 +75,6 @@ extern const CGFloat OBMenuBarWindowArrowWidth;
  *   be notified when the user attaches or detaches the window from the menu bar.
  */
 @interface OBMenuBarWindow : NSWindow
-{
-    BOOL isDragging;
-    BOOL resizeRight;
-    BOOL hideControls;
-    NSPoint dragStartLocation;
-    NSPoint resizeStartLocation;
-    NSRect dragStartFrame;
-    NSRect resizeStartFrame;
-    NSTextField *titleTextField;
-    NSImage *noiseImage;
-    NSStatusItem *statusItem;
-    OBMenuBarWindowIconView *statusItemView;
-}
 
 ///------------------
 /// @name Properties
@@ -122,7 +107,7 @@ extern const CGFloat OBMenuBarWindowArrowWidth;
 /**
  * The threshold distance between the centre of the title bar and the menu bar icon at which to "snap" the window to the menu bar when dragging (default is 30 pixels).
  */
-@property (assign) CGFloat snapDistance;
+@property (nonatomic, assign) CGFloat snapDistance;
 
 /**
  The distance between the window and the menu bar when the window is attached (default is 0 pixels).

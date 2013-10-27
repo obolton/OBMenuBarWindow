@@ -48,6 +48,16 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 
 @interface OBMenuBarWindow ()
 
+@property (nonatomic, assign) BOOL isDragging;
+@property (nonatomic, assign) BOOL resizeRight;
+@property (nonatomic, assign) BOOL hideControls;
+@property (nonatomic, assign) NSPoint dragStartLocation;
+@property (nonatomic, assign) NSPoint resizeStartLocation;
+@property (nonatomic, assign) NSRect dragStartFrame;
+@property (nonatomic, assign) NSRect resizeStartFrame;
+@property (nonatomic, strong) NSImage *noiseImage;
+@property (nonatomic, strong) OBMenuBarWindowIconView *statusItemView;
+
 - (void)initialSetup;
 - (NSRect)titleBarRect;
 - (NSRect)toolbarRect;
@@ -67,18 +77,6 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 
 @implementation OBMenuBarWindow
 
-@synthesize hasMenuBarIcon;
-@synthesize attachedToMenuBar;
-@synthesize hideWindowControlsWhenAttached;
-@synthesize snapDistance;
-@synthesize distanceFromMenuBar;
-@synthesize menuBarIcon;
-@synthesize highlightedMenuBarIcon;
-@synthesize statusItem;
-@synthesize toolbarView;
-@synthesize titleTextField;
-@synthesize isDetachable;
-
 - (id)initWithContentRect:(NSRect)contentRect
                 styleMask:(NSUInteger)aStyle
                   backing:(NSBackingStoreType)bufferingType
@@ -90,10 +88,10 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
                                 defer:flag];
     if (self)
     {
-        snapDistance = 30.0;
-        distanceFromMenuBar = 0;
-        hideWindowControlsWhenAttached = YES;
-        isDetachable = YES;
+        _snapDistance = 30.0;
+        _distanceFromMenuBar = 0;
+        _hideWindowControlsWhenAttached = YES;
+        _isDetachable = YES;
         [self initialSetup];
     }
     return self;
@@ -165,27 +163,27 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     // Create the toolbar view
     NSRect toolbarRect = [self toolbarRect];
     NSView *themeFrame = [self.contentView superview];
-    toolbarView = [[NSView alloc] initWithFrame:toolbarRect];
-    [toolbarView setAutoresizingMask:(NSViewWidthSizable | NSViewMinYMargin)];
+    _toolbarView = [[NSView alloc] initWithFrame:toolbarRect];
+    [_toolbarView setAutoresizingMask:(NSViewWidthSizable | NSViewMinYMargin)];
     
     // Create the title text field
     NSRect titleRect = NSMakeRect(70,
                                   (toolbarRect.size.height - 17) / 2,
                                   toolbarRect.size.width - 140,
                                   17);
-    titleTextField = [[NSTextField alloc] initWithFrame:titleRect];
-    [titleTextField setEditable:NO];
-    [titleTextField setBezeled:NO];
-    [titleTextField setDrawsBackground:NO];
-    [titleTextField setAlignment:NSCenterTextAlignment];
-    [titleTextField setFont:[NSFont titleBarFontOfSize:13.0]];
-    [[titleTextField cell] setLineBreakMode:NSLineBreakByTruncatingTail];
-    [[titleTextField cell] setBackgroundStyle:NSBackgroundStyleRaised];
-    [titleTextField setAutoresizingMask:NSViewWidthSizable];
-    [toolbarView addSubview:titleTextField];
+    _titleTextField = [[NSTextField alloc] initWithFrame:titleRect];
+    [_titleTextField setEditable:NO];
+    [_titleTextField setBezeled:NO];
+    [_titleTextField setDrawsBackground:NO];
+    [_titleTextField setAlignment:NSCenterTextAlignment];
+    [_titleTextField setFont:[NSFont titleBarFontOfSize:13.0]];
+    [[_titleTextField cell] setLineBreakMode:NSLineBreakByTruncatingTail];
+    [[_titleTextField cell] setBackgroundStyle:NSBackgroundStyleRaised];
+    [_titleTextField setAutoresizingMask:NSViewWidthSizable];
+    [_toolbarView addSubview:_titleTextField];
     
     // Lay out the content
-    [themeFrame addSubview:toolbarView];
+    [themeFrame addSubview:_toolbarView];
     [self layoutContent];
 }
 
@@ -208,7 +206,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     [[self.contentView superview] viewDidEndLiveResize];
     
     // Position the toolbar view
-    [toolbarView setFrame:[self toolbarRect]];
+    [self.toolbarView setFrame:[self toolbarRect]];
     
     // Position the content view
     NSRect contentViewFrame = [self.contentView frame];
@@ -226,188 +224,191 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 
 - (void)setHasMenuBarIcon:(BOOL)flag
 {
-    if (hasMenuBarIcon != flag)
+    if (self.hasMenuBarIcon == flag)
     {
-        hasMenuBarIcon = flag;
-        if (flag)
+        return;
+    }
+    _hasMenuBarIcon = flag;
+    if (flag)
+    {
+        // Create the status item
+        _statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
+        CGFloat thickness = [[NSStatusBar systemStatusBar] thickness];
+        self.statusItemView = [[OBMenuBarWindowIconView alloc] initWithFrame:NSMakeRect(0, 0, (self.menuBarIcon ? self.menuBarIcon.size.width : thickness) + 6, thickness)];
+        self.statusItemView.menuBarWindow = self;
+        _statusItem.view = self.statusItemView;
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusItemViewDidMove:) name:NSWindowDidMoveNotification object:_statusItem.view.window];
+    }
+    else
+    {
+        if (self.statusItemView)
         {
-            // Create the status item
-            statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
-            CGFloat thickness = [[NSStatusBar systemStatusBar] thickness];
-            statusItemView = [[OBMenuBarWindowIconView alloc] initWithFrame:NSMakeRect(0, 0, (self.menuBarIcon ? self.menuBarIcon.size.width : thickness) + 6, thickness)];
-            statusItemView.menuBarWindow = self;
-            statusItem.view = statusItemView;
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusItemViewDidMove:) name:NSWindowDidMoveNotification object:statusItem.view.window];
+            [[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidMoveNotification object:self.statusItemView];
         }
-        else
-        {
-            if (statusItemView)
-            {
-                [[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowDidMoveNotification object:statusItemView];
-            }
-            statusItemView = nil;
-            statusItem = nil;
-            self.attachedToMenuBar = NO;
-        }
+        self.statusItemView = nil;
+        _statusItem = nil;
+        self.attachedToMenuBar = NO;
     }
 }
 
 - (void)setMenuBarIcon:(NSImage *)image
 {
-    menuBarIcon = image;
-    if (statusItemView)
+    _menuBarIcon = image;
+    if (self.statusItemView)
     {
-        [statusItemView setFrameSize:NSMakeSize(image.size.width + 6, statusItemView.frame.size.height)];
-        [statusItemView setNeedsDisplay:YES];
+        [self.statusItemView setFrameSize:NSMakeSize(image.size.width + 6, self.statusItemView.frame.size.height)];
+        [self.statusItemView setNeedsDisplay:YES];
     }
 }
 
 - (void)setHighlightedMenuBarIcon:(NSImage *)image
 {
-    highlightedMenuBarIcon = image;
-    if (statusItemView)
+    _highlightedMenuBarIcon = image;
+    if (self.statusItemView)
     {
-        [statusItemView setNeedsDisplay:YES];
+        [self.statusItemView setNeedsDisplay:YES];
     }
 }
 
 - (void)setAttachedToMenuBar:(BOOL)isAttached
 {
-    if (isAttached != attachedToMenuBar)
+    if (self.attachedToMenuBar == isAttached)
     {
-        attachedToMenuBar = isAttached;
-        
-        if (isAttached)
-        {
-            NSRect newFrame = self.frame;
-            newFrame.size.height += OBMenuBarWindowArrowHeight;
-            newFrame.origin.y -= OBMenuBarWindowArrowHeight;
-            [self setFrame:newFrame display:YES];
-        }
-        else
-        {
-            NSRect newFrame = self.frame;
-            newFrame.size.height -= OBMenuBarWindowArrowHeight;
-            newFrame.origin.y += OBMenuBarWindowArrowHeight;
-            [self setFrame:newFrame display:YES];
-        }
-        
-        // Set whether the window is opaque (this affects the shadow)
-        [self setOpaque:!isAttached];
-        
-        // Reposition the content
-        [self layoutContent];
-        
-        // Animate the window controls
-        NSButton *closeButton = [self standardWindowButton:NSWindowCloseButton];
-        NSButton *minimiseButton = [self standardWindowButton:NSWindowMiniaturizeButton];
-        NSButton *zoomButton = [self standardWindowButton:NSWindowZoomButton];
-        if (isAttached)
-        {
-            if (self.hideWindowControlsWhenAttached)
-            {
-                hideControls = YES;
-                [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
-                    [context setDuration:0.15];
-                    [[closeButton animator] setAlphaValue:0.0];
-                    [[minimiseButton animator] setAlphaValue:0.0];
-                    [[zoomButton animator] setAlphaValue:0.0];
-                } completionHandler:^{
-                    if (hideControls)
-                    {
-                        [closeButton setHidden:YES];
-                        [minimiseButton setHidden:YES];
-                        [zoomButton setHidden:YES];
-                        [closeButton setAlphaValue:1.0];
-                        [minimiseButton setAlphaValue:1.0];
-                        [zoomButton setAlphaValue:1.0];
-                        hideControls = NO;
-                    }
-                }];
-            }
-            if (!isDragging)
-            {
-                [self setFrameOrigin:[self originForAttachedState]];
-            }
-        }
-        else
-        {
-            if (self.hideWindowControlsWhenAttached)
-            {
-                hideControls = NO;
-                [closeButton setAlphaValue:0.0];
-                [minimiseButton setAlphaValue:0.0];
-                [zoomButton setAlphaValue:0.0];
-                [closeButton setHidden:NO];
-                [minimiseButton setHidden:NO];
-                [zoomButton setHidden:NO];
-                [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
-                    [context setDuration:0.15];
-                    [[closeButton animator] setAlphaValue:1.0];
-                    [[minimiseButton animator] setAlphaValue:1.0];
-                    [[zoomButton animator] setAlphaValue:1.0];
-                } completionHandler:nil];
-            }
-            if (!isDragging)
-            {
-                [self setFrameOrigin:NSMakePoint(self.frame.origin.x,
-                                                 self.frame.origin.y - self.snapDistance - 10)];
-            }
-        }
-        
-        [self setLevel:(isAttached ? NSPopUpMenuWindowLevel : NSNormalWindowLevel)];
-        if (self.delegate != nil)
-        {
-            if (isAttached && [self.delegate respondsToSelector:@selector(windowDidAttachToStatusBar:)])
-            {
-                [self.delegate performSelector:@selector(windowDidAttachToStatusBar:)
-                                    withObject:self];
-                [[NSNotificationCenter defaultCenter] postNotificationName:OBMenuBarWindowDidAttachToMenuBar
-                                                                    object:self];
-            }
-            else if (!isAttached && [self.delegate respondsToSelector:@selector(windowDidDetachFromStatusBar:)])
-            {
-                [self.delegate performSelector:@selector(windowDidDetachFromStatusBar:)
-                                    withObject:self];
-                [[NSNotificationCenter defaultCenter] postNotificationName:OBMenuBarWindowDidDetachFromMenuBar
-                                                                    object:self];
-            }
-        }
-        [self layoutContent];
-        [[self.contentView superview] setNeedsDisplay:YES];
-        [self invalidateShadow];
+        return;
     }
+    _attachedToMenuBar = isAttached;
+    
+    if (isAttached)
+    {
+        NSRect newFrame = self.frame;
+        newFrame.size.height += OBMenuBarWindowArrowHeight;
+        newFrame.origin.y -= OBMenuBarWindowArrowHeight;
+        [self setFrame:newFrame display:YES];
+    }
+    else
+    {
+        NSRect newFrame = self.frame;
+        newFrame.size.height -= OBMenuBarWindowArrowHeight;
+        newFrame.origin.y += OBMenuBarWindowArrowHeight;
+        [self setFrame:newFrame display:YES];
+    }
+    
+    // Set whether the window is opaque (this affects the shadow)
+    [self setOpaque:!isAttached];
+    
+    // Reposition the content
+    [self layoutContent];
+    
+    // Animate the window controls
+    NSButton *closeButton = [self standardWindowButton:NSWindowCloseButton];
+    NSButton *minimiseButton = [self standardWindowButton:NSWindowMiniaturizeButton];
+    NSButton *zoomButton = [self standardWindowButton:NSWindowZoomButton];
+    if (isAttached)
+    {
+        if (self.hideWindowControlsWhenAttached)
+        {
+            self.hideControls = YES;
+            [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
+                [context setDuration:0.15];
+                [[closeButton animator] setAlphaValue:0.0];
+                [[minimiseButton animator] setAlphaValue:0.0];
+                [[zoomButton animator] setAlphaValue:0.0];
+            } completionHandler:^{
+                if (self.hideControls)
+                {
+                    [closeButton setHidden:YES];
+                    [minimiseButton setHidden:YES];
+                    [zoomButton setHidden:YES];
+                    [closeButton setAlphaValue:1.0];
+                    [minimiseButton setAlphaValue:1.0];
+                    [zoomButton setAlphaValue:1.0];
+                    self.hideControls = NO;
+                }
+            }];
+        }
+        if (!self.isDragging)
+        {
+            [self setFrameOrigin:[self originForAttachedState]];
+        }
+    }
+    else
+    {
+        if (self.hideWindowControlsWhenAttached)
+        {
+            self.hideControls = NO;
+            [closeButton setAlphaValue:0.0];
+            [minimiseButton setAlphaValue:0.0];
+            [zoomButton setAlphaValue:0.0];
+            [closeButton setHidden:NO];
+            [minimiseButton setHidden:NO];
+            [zoomButton setHidden:NO];
+            [NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
+                [context setDuration:0.15];
+                [[closeButton animator] setAlphaValue:1.0];
+                [[minimiseButton animator] setAlphaValue:1.0];
+                [[zoomButton animator] setAlphaValue:1.0];
+            } completionHandler:nil];
+        }
+        if (!self.isDragging)
+        {
+            [self setFrameOrigin:NSMakePoint(self.frame.origin.x,
+                                             self.frame.origin.y - self.snapDistance - 10)];
+        }
+    }
+    
+    [self setLevel:(isAttached ? NSPopUpMenuWindowLevel : NSNormalWindowLevel)];
+    if (self.delegate != nil)
+    {
+        if (isAttached && [self.delegate respondsToSelector:@selector(windowDidAttachToStatusBar:)])
+        {
+            [self.delegate performSelector:@selector(windowDidAttachToStatusBar:)
+                                withObject:self];
+            [[NSNotificationCenter defaultCenter] postNotificationName:OBMenuBarWindowDidAttachToMenuBar
+                                                                object:self];
+        }
+        else if (!isAttached && [self.delegate respondsToSelector:@selector(windowDidDetachFromStatusBar:)])
+        {
+            [self.delegate performSelector:@selector(windowDidDetachFromStatusBar:)
+                                withObject:self];
+            [[NSNotificationCenter defaultCenter] postNotificationName:OBMenuBarWindowDidDetachFromMenuBar
+                                                                object:self];
+        }
+    }
+    [self layoutContent];
+    [[self.contentView superview] setNeedsDisplay:YES];
+    [self invalidateShadow];
 }
 
 - (void)setHideWindowControlsWhenAttached:(BOOL)flag
 {
-    if (flag != hideWindowControlsWhenAttached)
+    if (self.hideWindowControlsWhenAttached == flag)
     {
-        hideWindowControlsWhenAttached = flag;
-        if (!flag)
-        {
-            NSButton *closeButton = [self standardWindowButton:NSWindowCloseButton];
-            NSButton *minimiseButton = [self standardWindowButton:NSWindowMiniaturizeButton];
-            NSButton *zoomButton = [self standardWindowButton:NSWindowZoomButton];
-            [closeButton setAlphaValue:1.0];
-            [minimiseButton setAlphaValue:1.0];
-            [zoomButton setAlphaValue:1.0];
-            [closeButton setHidden:NO];
-            [minimiseButton setHidden:NO];
-            [zoomButton setHidden:NO];
-        }
-        else if (self.attachedToMenuBar)
-        {
-            NSButton *closeButton = [self standardWindowButton:NSWindowCloseButton];
-            NSButton *minimiseButton = [self standardWindowButton:NSWindowMiniaturizeButton];
-            NSButton *zoomButton = [self standardWindowButton:NSWindowZoomButton];
-            [closeButton setAlphaValue:1.0];
-            [minimiseButton setAlphaValue:1.0];
-            [zoomButton setAlphaValue:1.0];
-            [closeButton setHidden:YES];
-            [minimiseButton setHidden:YES];
-            [zoomButton setHidden:YES];
-        }
+        return;
+    }
+    _hideWindowControlsWhenAttached = flag;
+    if (!flag)
+    {
+        NSButton *closeButton = [self standardWindowButton:NSWindowCloseButton];
+        NSButton *minimiseButton = [self standardWindowButton:NSWindowMiniaturizeButton];
+        NSButton *zoomButton = [self standardWindowButton:NSWindowZoomButton];
+        [closeButton setAlphaValue:1.0];
+        [minimiseButton setAlphaValue:1.0];
+        [zoomButton setAlphaValue:1.0];
+        [closeButton setHidden:NO];
+        [minimiseButton setHidden:NO];
+        [zoomButton setHidden:NO];
+    }
+    else if (self.attachedToMenuBar)
+    {
+        NSButton *closeButton = [self standardWindowButton:NSWindowCloseButton];
+        NSButton *minimiseButton = [self standardWindowButton:NSWindowMiniaturizeButton];
+        NSButton *zoomButton = [self standardWindowButton:NSWindowZoomButton];
+        [closeButton setAlphaValue:1.0];
+        [minimiseButton setAlphaValue:1.0];
+        [zoomButton setAlphaValue:1.0];
+        [closeButton setHidden:YES];
+        [minimiseButton setHidden:YES];
+        [zoomButton setHidden:YES];
     }
 }
 
@@ -475,9 +476,9 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 
 - (NSPoint)originForAttachedState
 {
-    if (statusItemView)
+    if (self.statusItemView)
     {
-        NSRect statusItemFrame = [[statusItemView window] frame];
+        NSRect statusItemFrame = [[self.statusItemView window] frame];
         NSPoint midPoint = NSMakePoint(NSMidX(statusItemFrame),
                                        NSMinY(statusItemFrame));
         return NSMakePoint(midPoint.x - (self.frame.size.width / 2),
@@ -513,15 +514,15 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
-    dragStartLocation = [NSEvent mouseLocation];
-    dragStartFrame = self.frame;
+    self.dragStartLocation = [NSEvent mouseLocation];
+    self.dragStartFrame = self.frame;
     NSPoint mouseLocationInWindow = [theEvent locationInWindow];
-    isDragging = NSPointInRect(mouseLocationInWindow, [self toolbarRect]);
+    self.isDragging = NSPointInRect(mouseLocationInWindow, [self toolbarRect]);
 }
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-    if (!self.attachedToMenuBar && [theEvent clickCount] == 2 && isDragging)
+    if (!self.attachedToMenuBar && [theEvent clickCount] == 2 && self.isDragging)
     {
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
         [userDefaults addSuiteNamed:NSGlobalDomain];
@@ -531,7 +532,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
             [self miniaturize:self];
         }
     }
-    else if (isDragging)
+    else if (self.isDragging)
     {
         NSRect visibleRect = [[self screen] visibleFrame];
         CGFloat minY = NSMinY(visibleRect);
@@ -540,7 +541,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
             [self setFrameOrigin:NSMakePoint(self.frame.origin.x, minY - self.frame.size.height + OBMenuBarWindowArrowHeight + 23)];
         }
     }
-    isDragging = NO;
+    self.isDragging = NO;
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
@@ -548,10 +549,10 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     if ([theEvent type] == NSLeftMouseDragged)
     {
         NSPoint newLocation = [NSEvent mouseLocation];
-        if (isDragging)
+        if (self.isDragging)
         {
-            CGFloat originX = dragStartFrame.origin.x + newLocation.x - dragStartLocation.x;
-            CGFloat originY = dragStartFrame.origin.y + newLocation.y - dragStartLocation.y;
+            CGFloat originX = self.dragStartFrame.origin.x + newLocation.x - self.dragStartLocation.x;
+            CGFloat originY = self.dragStartFrame.origin.y + newLocation.y - self.dragStartLocation.y;
             [self setFrameOrigin:NSMakePoint(originX, originY)];
         }
     }
@@ -566,16 +567,16 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 
 - (void)windowWillStartLiveResize:(NSNotification *)aNotification
 {
-    resizeStartFrame = self.frame;
-    resizeStartLocation = [self convertBaseToScreen:[self mouseLocationOutsideOfEventStream]];
-    resizeRight = ([self mouseLocationOutsideOfEventStream].x > self.frame.size.width / 2.0);
+    self.resizeStartFrame = self.frame;
+    self.resizeStartLocation = [self convertBaseToScreen:[self mouseLocationOutsideOfEventStream]];
+    self.resizeRight = ([self mouseLocationOutsideOfEventStream].x > self.frame.size.width / 2.0);
 }
 
 #pragma mark - Positioning events
 
 - (void)setDistanceFromMenuBar:(CGFloat)distance
 {
-    distanceFromMenuBar = distance;
+    _distanceFromMenuBar = distance;
     if (self.attachedToMenuBar)
     {
         [self setFrameOrigin:[self originForAttachedState]];
@@ -588,10 +589,10 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     {
         NSRect frame = [self frame];
         NSPoint arrowPoint = NSMakePoint(NSMidX(frame), NSMaxY(frame));
-        NSRect statusItemFrame = [[statusItemView window] frame];
+        NSRect statusItemFrame = [[self.statusItemView window] frame];
         NSPoint statusItemPoint = NSMakePoint(NSMidX(statusItemFrame), NSMinY(statusItemFrame));
         double distance = sqrt(pow(arrowPoint.x - statusItemPoint.x, 2) + pow(arrowPoint.y - statusItemPoint.y, 2));
-        if (!isDetachable || distance <= self.snapDistance)
+        if (!self.isDetachable || distance <= self.snapDistance)
         {
             [self setFrameOrigin:[self originForAttachedState]];
             self.attachedToMenuBar = YES;
@@ -617,26 +618,26 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
     if ([self inLiveResize] && self.attachedToMenuBar)
     {
         NSPoint mouseLocation = [self convertBaseToScreen:[self mouseLocationOutsideOfEventStream]];
-        NSRect newFrame = resizeStartFrame;
-        if (frameRect.size.width != resizeStartFrame.size.width)
+        NSRect newFrame = self.resizeStartFrame;
+        if (frameRect.size.width != self.resizeStartFrame.size.width)
         {
-            CGFloat deltaWidth = (resizeRight ? mouseLocation.x - resizeStartLocation.x : resizeStartLocation.x - mouseLocation.x);
+            CGFloat deltaWidth = (self.resizeRight ? mouseLocation.x - self.resizeStartLocation.x : self.resizeStartLocation.x - mouseLocation.x);
             newFrame.origin.x -= deltaWidth;
             newFrame.size.width += deltaWidth * 2;
             if (newFrame.size.width < self.minSize.width)
             {
                 newFrame.size.width = self.minSize.width;
-                newFrame.origin.x = NSMidX(resizeStartFrame) - (self.minSize.width) / 2.0;
+                newFrame.origin.x = NSMidX(self.resizeStartFrame) - (self.minSize.width) / 2.0;
             }
             if (newFrame.size.width > self.maxSize.width)
             {
                 newFrame.size.width = self.maxSize.width;
-                newFrame.origin.x = NSMidX(resizeStartFrame) - (self.maxSize.width) / 2.0;
+                newFrame.origin.x = NSMidX(self.resizeStartFrame) - (self.maxSize.width) / 2.0;
             }
         }
         
         // Don't allow resizing upwards when attached to menu bar
-        if (frameRect.origin.y != resizeStartFrame.origin.y)
+        if (frameRect.origin.y != self.resizeStartFrame.origin.y)
         {
             newFrame.origin.y = frameRect.origin.y;
             newFrame.size.height = frameRect.size.height;
@@ -659,7 +660,7 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
 
 - (NSImage *)noiseImage
 {
-    if (noiseImage == nil)
+    if (!_noiseImage)
     {
         size_t dimension = 100;
         size_t bytes = dimension * dimension * 4;
@@ -676,13 +677,13 @@ const CGFloat OBMenuBarWindowArrowWidth = 20.0;
         }
         CGContextRef contextRef = CGBitmapContextCreate(data, dimension, dimension, 8, dimension * 4, colorSpaceRef, kCGImageAlphaPremultipliedLast);
         CGImageRef imageRef = CGBitmapContextCreateImage(contextRef);
-        noiseImage = [[NSImage alloc] initWithCGImage:imageRef size:NSMakeSize(dimension, dimension)];
+        _noiseImage = [[NSImage alloc] initWithCGImage:imageRef size:NSMakeSize(dimension, dimension)];
         CGImageRelease(imageRef);
         CGContextRelease(contextRef);
         free(data);
         CGColorSpaceRelease(colorSpaceRef);
     }
-    return noiseImage;
+    return _noiseImage;
 }
 
 - (void)drawRectOriginal:(NSRect)dirtyRect
