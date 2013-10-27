@@ -37,4 +37,7 @@
 
 @property (assign) IBOutlet OBMenuBarWindow *window;
 
+@property (nonatomic, assign) CGFloat arrowWidth;
+@property (nonatomic, assign) CGFloat arrowHeight;
+
 @end

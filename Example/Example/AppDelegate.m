@@ -41,6 +41,18 @@
     self.window.hasMenuBarIcon = YES;
     self.window.attachedToMenuBar = YES;
     self.window.isDetachable = YES;
+    self.arrowWidth = 20;
+    self.arrowHeight = 10;
+}
+
+- (void)setArrowWidth:(CGFloat)width
+{
+    self.window.arrowSize = NSMakeSize(width, self.window.arrowSize.height);
+}
+
+- (void)setArrowHeight:(CGFloat)height
+{
+    self.window.arrowSize = NSMakeSize(self.window.arrowSize.width, height);
 }
 
 @end
