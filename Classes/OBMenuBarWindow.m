@@ -894,6 +894,25 @@ NSString * const OBMenuBarWindowDidDetachFromMenuBar = @"OBMenuBarWindowDidDetac
 {
     self.highlighted = NO;
 }
+    
+- (void)rightMouseDown:(NSEvent *)theEvent
+{
+    self.highlighted = YES;
+    if ([self.menuBarWindow isMainWindow] || (self.menuBarWindow.isVisible && self.menuBarWindow.attachedToMenuBar))
+    {
+        [self.menuBarWindow orderOut:self];
+    }
+    else
+    {
+        [NSApp activateIgnoringOtherApps:YES];
+        [self.menuBarWindow makeKeyAndOrderFront:self];
+    }
+}
+
+- (void)rightMouseUp:(NSEvent *)theEvent
+{
+    self.highlighted = NO;
+}
 
 #pragma mark - Drawing
 
